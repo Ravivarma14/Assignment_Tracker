@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cv_student_container"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/white"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="10dp"
+        android:padding="10dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_project_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:text="Research"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_final_payment_status_hint"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="Final Payment Status"
+                android:textSize="16sp"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_final_payment_status"
+                app:layout_constraintTop_toBottomOf="@id/tv_final_payment_status_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="Pending"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_in_date_hint"
+                app:layout_constraintTop_toBottomOf="@id/tv_final_payment_status"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="20dp"
+                android:text="In Date"
+                android:textSize="16sp"
+                android:gravity="center"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_in_date"
+                app:layout_constraintTop_toBottomOf="@id/tv_in_date_hint"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="14-11-2000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_out_date_hint"
+                app:layout_constraintTop_toBottomOf="@id/tv_final_payment_status"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="20dp"
+                android:text="Out Date"
+                android:textSize="16sp"
+                android:gravity="center"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_out_date"
+                app:layout_constraintTop_toBottomOf="@id/tv_out_date_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="20-11-2000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_price_hint"
+                app:layout_constraintTop_toBottomOf="@id/tv_in_date"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="10dp"
+                android:text="Price"
+                android:textSize="16sp"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_price"
+                app:layout_constraintTop_toBottomOf="@id/tv_price_hint"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="2000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_advance_hint"
+                app:layout_constraintTop_toBottomOf="@id/tv_out_date"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="10dp"
+                android:text="Advance"
+                android:textSize="16sp"
+                android:gravity="center"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_advance"
+                app:layout_constraintTop_toBottomOf="@id/tv_advance_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="1000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textAllCaps="true"/>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
