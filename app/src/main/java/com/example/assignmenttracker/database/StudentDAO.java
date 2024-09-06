@@ -9,6 +9,7 @@ import static androidx.room.OnConflictStrategy.REPLACE;
 
 import com.example.assignmenttracker.models.StudentModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
@@ -22,6 +23,9 @@ public interface StudentDAO {
 
     @Query("SELECT * FROM students")
     List<StudentModel> getAllStudents();
+
+    @Query("SELECT * FROM students WHERE s_id=:sId")
+    StudentModel getStudentById(int sId);
 
     @Query("DELETE FROM students WHERE s_id=:sId")
     void deleteStudent(int sId);

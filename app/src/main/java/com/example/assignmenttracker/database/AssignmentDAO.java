@@ -9,6 +9,7 @@ import androidx.room.Query;
 import com.example.assignmenttracker.models.AssignmentModel;
 import com.example.assignmenttracker.models.StudentModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
@@ -22,6 +23,12 @@ public interface AssignmentDAO {
 
     @Query("SELECT * FROM assignments")
     List<AssignmentModel> getAllAssignments();
+
+    @Query("SELECT * FROM assignments WHERE s_id=:sId")
+    List<AssignmentModel> getAssignmentsForStudent( int sId);
+
+    @Query("SELECT * FROM assignments WHERE assignment_id=:assignmentId")
+    AssignmentModel getAssignmentById(int assignmentId);
 
     @Query("DELETE FROM assignments WHERE assignment_id=:assignmentId")
     void deleteAssignment(int assignmentId);

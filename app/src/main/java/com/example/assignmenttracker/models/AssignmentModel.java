@@ -9,33 +9,33 @@ public class AssignmentModel {
 
     @ColumnInfo(name = "assignment_id")
     @PrimaryKey(autoGenerate = true)
-    int assignmentId=0;
+    public int assignmentId=0;
     @ColumnInfo(name = "s_id")
-    int sId=0;
+    public int sId=0;
     @ColumnInfo(name = "semester")
-    String semester;
+    public String semester;
     @ColumnInfo(name = "subject")
-    String subject;
+    public String subject;
     @ColumnInfo(name = "project")
-    String project;
+    public String project;
     @ColumnInfo(name = "in_date")
-    String inDate;
+    public String inDate;
     @ColumnInfo(name = "submission_doc")
-    String submissionDoc;
+    public String submissionDoc;
     @ColumnInfo(name = "input_doc")
-    String inputDoc;
+    public String inputDoc;
     @ColumnInfo(name = "out_date")
-    String outDate;
+    public String outDate;
     @ColumnInfo(name = "price")
-    Integer price;
+    public Integer price;
     @ColumnInfo(name = "advance_payment")
-    Integer advancePayment;
+    public Integer advancePayment;
     @ColumnInfo(name = "advance_payment_screenshot")
-    String advancePaymentScreenshot;
+    public String advancePaymentScreenshot;
     @ColumnInfo(name = "final_payment")
-    Integer finalPayment;
+    public Integer finalPayment;
     @ColumnInfo(name = "final_payment_screenshot")
-    String finalPaymentScreenShot;
+    public String finalPaymentScreenShot;
 
     public int getAssignmentId() {
         return assignmentId;
@@ -45,6 +45,13 @@ public class AssignmentModel {
         this.assignmentId = assignmentId;
     }
 
+    public int getsId() {
+        return sId;
+    }
+
+    public void setsId(int sId) {
+        this.sId = sId;
+    }
     public String getSemester() {
         return semester;
     }

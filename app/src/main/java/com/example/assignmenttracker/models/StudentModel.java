@@ -10,15 +10,15 @@ import java.io.Serializable;
 public class StudentModel implements Serializable {
     @ColumnInfo(name = "s_id")
     @PrimaryKey(autoGenerate = true)
-    int sId=0;
+    public int sId=0;
     @ColumnInfo(name = "student_name")
-    String sName;
+    public String sName;
     @ColumnInfo(name = "university_name")
-    String sUniversityName;
+    public String sUniversityName;
     @ColumnInfo(name = "mobile_no")
-    String sMobileNumber;
+    public String sMobileNumber;
     @ColumnInfo(name = "refer_by")
-    String sReferBy;
+    public String sReferBy;
 
     public int getsId() {
         return sId;

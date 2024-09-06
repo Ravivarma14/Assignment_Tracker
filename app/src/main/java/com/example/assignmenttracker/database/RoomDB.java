@@ -12,7 +12,7 @@ import com.example.assignmenttracker.models.StudentModel;
 @Database(entities = {StudentModel.class, AssignmentModel.class}, version = 1, exportSchema = false)
 public abstract class RoomDB extends RoomDatabase {
     private static RoomDB database;
-    private static String databaseName="AssignmentDB";
+    public static String databaseName="AssignmentDB.db";
 
     public synchronized static RoomDB getInstance(Context context){
         if(database==null){
@@ -25,4 +25,5 @@ public abstract class RoomDB extends RoomDatabase {
     }
 
     public abstract StudentDAO studentDAO();
+    public abstract AssignmentDAO assignmentDAO();
 }

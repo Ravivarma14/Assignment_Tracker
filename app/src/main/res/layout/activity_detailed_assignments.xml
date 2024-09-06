@@ -17,7 +17,7 @@
         android:layout_marginTop="10dp"
         android:textStyle="bold"
         android:textSize="28sp"
-        android:text="Assignments"/>
+        android:text="List Of Assignments"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -32,13 +32,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:id="@+id/tv_student_name"
             android:layout_marginTop="10dp"
             android:textStyle="bold"
             android:textSize="24sp"
             android:text="Pavan"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_student_name"
+            app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/tv_phone_no"
+            android:layout_marginTop="10dp"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:text="9897387944"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_phone_no"
+            app:layout_constraintStart_toStartOf="@id/tv_phone_no"
+            android:id="@+id/tv_phone_hint"
+            android:textSize="16sp"
+            android:text="mobile number"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -84,9 +103,20 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_margin="20dp"
         android:id="@+id/recyclerview_assignments"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_student_details_container"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="20dp"
+        android:id="@+id/fab_add_assignment"
+        android:backgroundTint="@color/white"
+        android:src="@drawable/baseline_add_24"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
