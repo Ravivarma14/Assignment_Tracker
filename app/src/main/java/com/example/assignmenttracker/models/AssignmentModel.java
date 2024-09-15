@@ -12,6 +12,8 @@ public class AssignmentModel {
     public int assignmentId=0;
     @ColumnInfo(name = "s_id")
     public int sId=0;
+    @ColumnInfo(name = "student_name")
+    public String studentName;
     @ColumnInfo(name = "semester")
     public String semester;
     @ColumnInfo(name = "subject")
@@ -51,6 +53,12 @@ public class AssignmentModel {
 
     public void setsId(int sId) {
         this.sId = sId;
+    }
+    public String getStudentName() {
+        return studentName;
+    }
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
     public String getSemester() {
         return semester;

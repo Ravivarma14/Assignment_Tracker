@@ -4,6 +4,7 @@ import static androidx.room.OnConflictStrategy.REPLACE;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
 import com.example.assignmenttracker.models.AssignmentModel;
@@ -32,5 +33,8 @@ public interface AssignmentDAO {
 
     @Query("DELETE FROM assignments WHERE assignment_id=:assignmentId")
     void deleteAssignment(int assignmentId);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAllAssignments(List<AssignmentModel> entities);
 
 }

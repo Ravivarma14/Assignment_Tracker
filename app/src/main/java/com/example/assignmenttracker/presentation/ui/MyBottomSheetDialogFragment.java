@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.assignmenttracker.R;
+import com.example.assignmenttracker.database.RoomDB;
+import com.example.assignmenttracker.database.StudentDAO;
 import com.example.assignmenttracker.databinding.FragmentAddAssignmentBinding;
 import com.example.assignmenttracker.databinding.FragmentAddStudentBinding;
 import com.example.assignmenttracker.models.AssignmentModel;
@@ -26,36 +28,46 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     FragmentAddStudentBinding fragmentAddStudentBinding;
     FragmentAddAssignmentBinding fragmentAddAssignmentBinding;
     private OnDismissListener onDismissListener;
+    RoomDB database;
 
     public MyBottomSheetDialogFragment(boolean isAddStudent, int sId){
         this.isAddStudent=isAddStudent;
         this.studentId=sId;
+
+        database= RoomDB.getInstance(getContext(),false);
     }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         //return super.onCreateView(inflater, container, savedInstanceState);
-        if(isAddStudent){
             fragmentAddStudentBinding= FragmentAddStudentBinding.inflate(inflater,container,false);
             return fragmentAddStudentBinding.getRoot();
-            }
-        else {
-            fragmentAddAssignmentBinding=FragmentAddAssignmentBinding.inflate(inflater,container,false);
-            return fragmentAddAssignmentBinding.getRoot();
-        }
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        if(isAddStudent)
-            setAddStudentListerners();
-        else
-            setAddAssignmentListerners();
+        if(studentId>=0){
+            StudentModel student= database.studentDAO().getStudentById(studentId);
+            setupStudentDetails(student);
+            setAddStudentListerners(false);
+        }
+        else {
+            setAddStudentListerners(true);
+        }
     }
 
-    private void setAddStudentListerners(){
+    private void setupStudentDetails(StudentModel student){
+        fragmentAddStudentBinding.headerText.setText("Update Student Details");
+        fragmentAddStudentBinding.btnAddStudent.setText("Update Student");
+
+        fragmentAddStudentBinding.etStudentName.setText(student.getsName());
+        fragmentAddStudentBinding.etUniversityName.setText(student.getsUniversityName());
+        fragmentAddStudentBinding.etPhoneNumber.setText(student.getsMobileNumber());
+        fragmentAddStudentBinding.etReferBy.setText(student.getsReferBy());
+    }
+
+    private void setAddStudentListerners(boolean isAdd){
         fragmentAddStudentBinding.btnAddStudent.setOnClickListener(v->{
             StudentModel studentModel= new StudentModel();
 
@@ -69,7 +81,10 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             studentModel.setsMobileNumber(phoneNo);
             studentModel.setsReferBy(referBy);
 
-            database.studentDAO().insertStudent(studentModel);
+            if(isAdd)
+                database.studentDAO().insertStudent(studentModel);
+            else
+                database.studentDAO().updateStudent(studentId,studentName,universityName,phoneNo,referBy);
 
             onDismiss(this.getDialog());
         });

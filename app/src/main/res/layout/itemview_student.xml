@@ -14,8 +14,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:backgroundTint="@color/white"
-        app:cardCornerRadius="20dp"
-        android:padding="10dp">
+        app:strokeWidth="0dp"
+        app:contentPadding="10dp"
+        app:cardCornerRadius="20dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -40,6 +41,7 @@
                 android:layout_height="wrap_content"
                 app:cardElevation="5dp"
                 android:layout_marginTop="5dp"
+                android:backgroundTint="@color/red"
                 app:cardCornerRadius="20dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintStart_toEndOf="@id/tv_student_name"
@@ -51,6 +53,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/tv_university_name"
                 android:text="JNTUH"
+                style="@style/WhiteText"
                 android:layout_margin="5dp"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"

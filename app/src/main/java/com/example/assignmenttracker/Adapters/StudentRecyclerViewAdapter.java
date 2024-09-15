@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.assignmenttracker.database.RoomDB;
 import com.example.assignmenttracker.databinding.ItemviewStudentBinding;
 import com.example.assignmenttracker.models.StudentModel;
 import com.example.assignmenttracker.presentation.ui.DetailedAssignmentsActivity;
@@ -18,10 +19,12 @@ import java.util.ArrayList;
 public class StudentRecyclerViewAdapter extends RecyclerView.Adapter<StudentRecyclerViewAdapter.StudentViewHolder> {
 
     private ArrayList<StudentModel> listOfStudents;
+    public static RoomDB database;
     private Context context;
     public StudentRecyclerViewAdapter(Context context, ArrayList<StudentModel> list){
         this.context=context;
         this.listOfStudents=list;
+        database= RoomDB.getInstance(context.getApplicationContext(),false);
     }
     public void setListOfStudents(ArrayList<StudentModel> listOfStudents){
         this.listOfStudents=listOfStudents;
@@ -41,7 +44,8 @@ public class StudentRecyclerViewAdapter extends RecyclerView.Adapter<StudentRecy
         holder.binding.tvStudentName.setText(student.getsName());
         holder.binding.tvMobileNo.setText(student.getsMobileNumber());
         holder.binding.tvUniversityName.setText(student.getsUniversityName());
-        holder.binding.tvAssignmentCount.setText("5"); //Count get from another table
+        int noOfAssignments= database.assignmentDAO().getAssignmentsForStudent(student.getsId()).size();
+        holder.binding.tvAssignmentCount.setText(String.valueOf(noOfAssignments)); //Count get from another table
 
         holder.binding.getRoot().setOnClickListener(v->{
             Intent assignmentsDetails=new Intent(context, DetailedAssignmentsActivity.class);

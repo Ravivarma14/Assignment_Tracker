@@ -1,6 +1,8 @@
 package com.example.assignmenttracker.presentation.ui;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import com.example.assignmenttracker.database.RoomDB;
 import com.example.assignmenttracker.databinding.ActivityDetailedAssignmentsBinding;
 import com.example.assignmenttracker.models.AssignmentModel;
 import com.example.assignmenttracker.models.StudentModel;
+import com.example.assignmenttracker.presenentation.new_ui.HomeScreenActivity;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.net.ConnectException;
@@ -61,7 +64,7 @@ public class DetailedAssignmentsActivity extends AppCompatActivity {
         setCurrentStudent();
         setupRecyclerViewAdapter();
 
-        binding.fabAddAssignment.setOnClickListener(v->{navigateToAddAssignment(sId);});
+        //binding.fabAddAssignment.setOnClickListener(v->{navigateToAddAssignment(sId);});
 
     }
 
@@ -98,18 +101,49 @@ public class DetailedAssignmentsActivity extends AppCompatActivity {
                     // Handle left swipe
                     // For example, remove the item
 
-                    AssignmentModel deleteData= assignmentsList.get(position);
 
-                    database.assignmentDAO().deleteAssignment(assignmentsList.get(position).getAssignmentId());
-                    assignmentsList.remove(position);
-                    refreshAssignmentList();
-                    //Toast.makeText(DetailedAssignmentsActivity.this,"Assignment Deleted",Toast.LENGTH_SHORT).show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(DetailedAssignmentsActivity.this);
 
-                    Snackbar.make(binding.recyclerviewAssignments,"xxxx",Snackbar.LENGTH_LONG).setAction("undo", v->{
-                       assignmentsList.add(deleteData);
-                       database.assignmentDAO().insertAssignment(deleteData);
-                       refreshAssignmentList();
-                    }).show();
+                    // Set the message show for the Alert time
+                    builder.setMessage("Are you sure ?");
+
+                    // Set Alert Title
+                    builder.setTitle("Delete "+ assignmentsList.get(position).getProject());
+
+                    // Set Cancelable false for when the user clicks on the outside the Dialog Box then it will remain show
+                    builder.setCancelable(false);
+
+                    // Set the positive button with yes name Lambda OnClickListener method is use of DialogInterface interface.
+                    builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+                        // When the user click yes button then app will close
+
+                        AssignmentModel deleteData = assignmentsList.get(position);
+
+                        database.assignmentDAO().deleteAssignment(assignmentsList.get(position).getAssignmentId());
+                        assignmentsList.remove(position);
+                        refreshAssignmentList();
+                        //Toast.makeText(DetailedAssignmentsActivity.this,"Assignment Deleted",Toast.LENGTH_SHORT).show();
+
+                        Snackbar.make(binding.recyclerviewAssignments, "xxxx", Snackbar.LENGTH_LONG).setAction("undo", v -> {
+                            assignmentsList.add(deleteData);
+                            database.assignmentDAO().insertAssignment(deleteData);
+                            refreshAssignmentList();
+                        }).show();
+
+                        dialog.dismiss();
+                    });
+
+                    builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+                        // If user click no then dialog box is canceled.
+                        refreshAssignmentList();
+                        dialog.dismiss();
+                    });
+
+                    // Create the Alert dialog
+                    AlertDialog alertDialog = builder.create();
+                    // Show the Alert Dialog box
+                    alertDialog.show();
+
 
                 } else if (direction == ItemTouchHelper.RIGHT) {
                     Intent viewAssignment=new Intent(DetailedAssignmentsActivity.this, AddUpdateViewAssignmentsActivity.class);
@@ -148,7 +182,7 @@ public class DetailedAssignmentsActivity extends AppCompatActivity {
 
     private void init(){
         context= DetailedAssignmentsActivity.this;
-        database= RoomDB.getInstance(context);
+        database= RoomDB.getInstance(getApplicationContext(),false);
 
         assignmentsList = database.assignmentDAO().getAssignmentsForStudent(sId);
     }

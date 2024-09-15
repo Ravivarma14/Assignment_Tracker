@@ -4,7 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,7 +34,12 @@ public class HomeScreenActivity extends AppCompatActivity {
     List<StudentModel> studentsList;
     MyBottomSheetDialogFragment bottomSheet;
     StudentRecyclerViewAdapter stundentAdapter;
-
+    private static final int REQUEST_CODE_PERMISSIONS = 1;
+   /* private static final String[] PERMISSIONS = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,23 +47,33 @@ public class HomeScreenActivity extends AppCompatActivity {
         binding=ActivityHomeScreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        askForPermissions();
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    110);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_CODE_PERMISSIONS);
         }
-
-        else {
 
             init();
             setupRecyclerViewAdapter();
-        }
+
         binding.fabAddStudent.setOnClickListener(v->{showAddStudentBottomDialog();});
         binding.ivSettings.setOnClickListener(v->{
             Intent intent= new Intent(HomeScreenActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
+    }
+
+    public void askForPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+                return;
+            }
+            //createDir();
+        }
     }
 
     private  void setupRecyclerViewAdapter(){
@@ -69,9 +87,17 @@ public class HomeScreenActivity extends AppCompatActivity {
     private void init(){
         context= HomeScreenActivity.this;
 
-        database=RoomDB.getInstance(context);
+        database=RoomDB.getInstance(getApplicationContext(),false);
         studentsList = database.studentDAO().getAllStudents();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        init();
+        setupRecyclerViewAdapter();
+    }
+
     private void refreshStudentsList(){
         studentsList = database.studentDAO().getAllStudents();
         ArrayList<StudentModel> students= new ArrayList<>();
@@ -94,19 +120,4 @@ public class HomeScreenActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 110) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-                Toast.makeText(this, "permission granted", Toast.LENGTH_SHORT).show();
-                init();
-                setupRecyclerViewAdapter();
-            } else {
-                // Permission denied
-                Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 }

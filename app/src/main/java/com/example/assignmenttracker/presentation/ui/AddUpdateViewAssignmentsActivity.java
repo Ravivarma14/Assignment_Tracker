@@ -8,6 +8,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
@@ -22,14 +27,19 @@ import com.example.assignmenttracker.databinding.ActivityAddUpdateViewAssignment
 import com.example.assignmenttracker.databinding.FragmentAddAssignmentBinding;
 import com.example.assignmenttracker.databinding.FragmentAddStudentBinding;
 import com.example.assignmenttracker.models.AssignmentModel;
+import com.example.assignmenttracker.models.StudentModel;
+import com.example.assignmenttracker.utils.PathUtils;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
 
     ActivityAddUpdateViewAssignmentsBinding viewAssignmentsBinding;
-    //FragmentAddAssignmentBinding fragmentAddAssignmentBinding;
     Context context;
     RoomDB database;
 
@@ -40,19 +50,16 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
     private int assignmentId=-1;
     private int studentId=-1;
     AssignmentModel assignment;
+    ArrayList<Integer> studentIdsList= new ArrayList<>();
+    String selectedStudentName="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         currentAction=getIntent().getIntExtra("action",0);
         assignmentId=getIntent().getIntExtra("assignmentId",-1);
-        studentId=getIntent().getIntExtra("sId",-1);
 
-        if(currentAction==ACTION_VIEW) {
-//            viewAssignmentsBinding = ActivityAddUpdateViewAssignmentsBinding.inflate(getLayoutInflater());
-//            setContentView(viewAssignmentsBinding.getRoot());
-        }
-        else if(currentAction==ACTION_ADD || currentAction==ACTION_UPDATE) {
+        if(currentAction==ACTION_ADD || currentAction==ACTION_UPDATE) {
             viewAssignmentsBinding = ActivityAddUpdateViewAssignmentsBinding.inflate(getLayoutInflater());
             setContentView(viewAssignmentsBinding.getRoot());
             init();
@@ -60,11 +67,43 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
         }
 
 
+        List<StudentModel> students= database.studentDAO().getAllStudents();
+        ArrayList<StudentModel> studentList=new ArrayList<>();
+        studentList.addAll(students);
+        setupStudentAutoCompleteTextview(studentList);
+
+        setUpListeners();
+
         if(currentAction==ACTION_UPDATE) {
             setupAssignmentForUpdate();
         } else if (currentAction==ACTION_ADD) {
             setUpAddAssignmentView();
         }
+    }
+
+    ArrayList<String> studentAdapterList;
+    private void setupStudentAutoCompleteTextview(ArrayList<StudentModel> studentModelArrayList){
+
+        studentAdapterList = new ArrayList<>();
+        for(StudentModel student: studentModelArrayList){
+            studentIdsList.add(student.getsId());
+            studentAdapterList.add(student.getsName());
+        }
+
+        // Create an ArrayAdapter using the string array and a default dropdown layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line,studentAdapterList);
+
+        // Set the adapter to the AutoCompleteTextView
+        viewAssignmentsBinding.studentAutoCompleteTV.setAdapter(adapter);
+
+        // Set threshold (number of characters to start showing suggestions)
+        viewAssignmentsBinding.studentAutoCompleteTV.setThreshold(1); // Start showing suggestions after 1 character
+
+        // Set item click listener for when an item is selected
+        viewAssignmentsBinding.studentAutoCompleteTV.setOnItemClickListener((parent, view, position, id) -> {
+            studentId= studentIdsList.get(position);
+            selectedStudentName = (String) parent.getItemAtPosition(position);
+        });
     }
 
     private void setDatePickUpListerners(){
@@ -107,18 +146,24 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
 
     private void init(){
         context= AddUpdateViewAssignmentsActivity.this;
-        database= RoomDB.getInstance(context);
+        database= RoomDB.getInstance(getApplicationContext(),false);
 
         if(assignmentId!=-1)
             assignment=database.assignmentDAO().getAssignmentById(assignmentId);
     }
 
-    private void setUpAssignmentForView(){
-        //binding.tvProjectName.setText(assignment.getProject());
-    }
 
     private void setupAssignmentForUpdate(){
+        viewAssignmentsBinding.headerText.setText("Update Assignment");
         viewAssignmentsBinding.btnAddAssignment.setText("Update Assignment");
+
+        int position= studentAdapterList.indexOf(assignment.getStudentName());
+        Log.d("TAG", "setupAssignmentForUpdate: position: "+ position);
+        if(position>=0 && position<studentAdapterList.size()) {
+            Log.d("TAG", "setupAssignmentForUpdate: position: "+ position);
+            viewAssignmentsBinding.studentAutoCompleteTV.setText((CharSequence) viewAssignmentsBinding.studentAutoCompleteTV.getAdapter().getItem(position),false);
+            studentId = studentIdsList.get(position);
+        }
 
         viewAssignmentsBinding.etSubject.setText(assignment.getSubject());
         viewAssignmentsBinding.etSemester.setText(assignment.getSemester());
@@ -128,6 +173,10 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
         viewAssignmentsBinding.etAdvance.setText(String.valueOf(assignment.getAdvancePayment()));
         viewAssignmentsBinding.etPrice.setText(String.valueOf(assignment.getPrice()));
         viewAssignmentsBinding.etFinalPayment.setText(String.valueOf(assignment.getFinalPayment()));
+
+        viewAssignmentsBinding.tvSelectedInputDoc.setText(assignment.getInputDoc());
+        viewAssignmentsBinding.tvAdvanceSs.setText(assignment.getAdvancePaymentScreenshot());
+        viewAssignmentsBinding.tvFinalPaymentSs.setText(assignment.getFinalPaymentScreenShot());
 
         viewAssignmentsBinding.btnAddAssignment.setOnClickListener(v->{
 
@@ -151,47 +200,114 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
         });
     }
 
+    private void setUpListeners(){
+        viewAssignmentsBinding.etPrice.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-    private void setUpAddAssignmentView(){
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!s.toString().isEmpty() && !viewAssignmentsBinding.etAdvance.getText().toString().isEmpty()){
+                    viewAssignmentsBinding.etFinalPayment.setText(String.valueOf(Integer.parseInt(s.toString()) - Integer.parseInt(viewAssignmentsBinding.etAdvance.getText().toString())));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        viewAssignmentsBinding.etAdvance.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!s.toString().isEmpty() && !viewAssignmentsBinding.etPrice.getText().toString().isEmpty()){
+                    viewAssignmentsBinding.etFinalPayment.setText(String.valueOf(Integer.parseInt(viewAssignmentsBinding.etPrice.getText().toString()) - Integer.parseInt(s.toString())));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         viewAssignmentsBinding.btnSelectInputDoc.setOnClickListener(v->{
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("application/pdf");
-                startActivityForResult(Intent.createChooser(intent, "Select PDF"), 100);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("application/pdf");
+            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+            startActivityForResult(Intent.createChooser(intent, "Select PDF"), 100);
         });
 
         viewAssignmentsBinding.btnSelectAdvanceSs.setOnClickListener(v->{
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, Arrays.asList("image/png", "image/jpeg").toArray());
+            intent.setType("*/*");
             startActivityForResult(intent, 200);
         });
 
         viewAssignmentsBinding.btnSelectFinalPaymentSs.setOnClickListener(v->{
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, Arrays.asList("image/png", "image/jpeg").toArray());
+            intent.setType("*/*");
             startActivityForResult(intent, 300);
         });
 
+
+    }
+
+    private void setUpAddAssignmentView(){
+
         viewAssignmentsBinding.btnAddAssignment.setOnClickListener(v->{
-            if(studentId!=-1) {
-                AssignmentModel assignmentModel = new AssignmentModel();
 
-                assignmentModel.setsId(studentId);
-                assignmentModel.setSemester(viewAssignmentsBinding.etSemester.getText().toString());
-                assignmentModel.setSubject(viewAssignmentsBinding.etSubject.getText().toString());
-                assignmentModel.setProject(viewAssignmentsBinding.etProject.getText().toString());
-                assignmentModel.setInDate(viewAssignmentsBinding.etAutoFillInDate.getText().toString());
-                assignmentModel.setOutDate(viewAssignmentsBinding.etOutDate.getText().toString());
-                assignmentModel.setPrice(Integer.parseInt(viewAssignmentsBinding.etPrice.getText().toString()));
-                assignmentModel.setAdvancePayment(Integer.parseInt(viewAssignmentsBinding.etAdvance.getText().toString()));
-                assignmentModel.setFinalPayment(Integer.parseInt(viewAssignmentsBinding.etFinalPayment.getText().toString()));
+                String semesterField= viewAssignmentsBinding.etSemester.getText().toString();
+                String subjectField= viewAssignmentsBinding.etSubject.getText().toString();
+                String projectField= viewAssignmentsBinding.etProject.getText().toString();
+                String setInDateField= viewAssignmentsBinding.etAutoFillInDate.getText().toString();
+                String setOutDateField= viewAssignmentsBinding.etOutDate.getText().toString();
+                String priceField= viewAssignmentsBinding.etPrice.getText().toString();
+                String setAdvancePaymentField= viewAssignmentsBinding.etAdvance.getText().toString();
+                String setFinalPaymentField= viewAssignmentsBinding.etFinalPayment.getText().toString();
+                String setInputDocField= viewAssignmentsBinding.tvSelectedInputDoc.getText().toString();
+                String setAdvancePaymentSSField= viewAssignmentsBinding.tvAdvanceSs.getText().toString();
+                String setFinalPaymentSSField= viewAssignmentsBinding.tvFinalPaymentSs.getText().toString();
+
+                if(studentId==-1 || selectedStudentName.isEmpty() || semesterField.isEmpty() || subjectField.isEmpty()
+                    || projectField.isEmpty() || setInDateField.isEmpty() || setOutDateField.isEmpty() || priceField.isEmpty()
+                    || setAdvancePaymentField.isEmpty() || setFinalPaymentField.isEmpty() || setInputDocField.isEmpty()
+                    || setAdvancePaymentSSField.isEmpty() || setFinalPaymentSSField.isEmpty() || Integer.parseInt(setFinalPaymentField) <= 0){
+                    Toast.makeText(AddUpdateViewAssignmentsActivity.this, "Fill all details to add Assignment", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    AssignmentModel assignmentModel = new AssignmentModel();
+
+                    assignmentModel.setsId(studentId);
+                    assignmentModel.setStudentName(selectedStudentName);
+                    assignmentModel.setSemester(semesterField);
+                    assignmentModel.setSubject(subjectField);
+                    assignmentModel.setProject(projectField);
+                    assignmentModel.setInDate(setInDateField);
+                    assignmentModel.setOutDate(setOutDateField);
+                    assignmentModel.setPrice(Integer.parseInt(priceField));
+                    assignmentModel.setAdvancePayment(Integer.parseInt(setAdvancePaymentField));
+                    assignmentModel.setFinalPayment(Integer.parseInt(setFinalPaymentField));
 
 
-               assignmentModel.setInputDoc(viewAssignmentsBinding.tvSelectedInputDoc.getText().toString());
-               assignmentModel.setFinalPaymentScreenShot(viewAssignmentsBinding.tvFinalPaymentSs.getText().toString());
-               assignmentModel.setAdvancePaymentScreenshot(viewAssignmentsBinding.tvAdvanceSs.getText().toString());
+                    assignmentModel.setInputDoc(setInputDocField);
+                    assignmentModel.setFinalPaymentScreenShot(setFinalPaymentSSField);
+                    assignmentModel.setAdvancePaymentScreenshot(setAdvancePaymentSSField);
 
-               database.assignmentDAO().insertAssignment(assignmentModel);
+                    database.assignmentDAO().insertAssignment(assignmentModel);
 
-               finish();
-            }
+                    finish();
+                }
         });
     }
 
@@ -203,35 +319,37 @@ public class AddUpdateViewAssignmentsActivity extends AppCompatActivity {
 
         if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
             selectedUri = data.getData();
-            String fileName = getFileName(selectedUri);
+            String fileName = null; //getFileName(selectedUri);
+            try {
+                fileName = PathUtils.getPath(AddUpdateViewAssignmentsActivity.this,selectedUri);
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"file path: "+ fileName,Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"error getting image path",Toast.LENGTH_SHORT).show();
+            }
             viewAssignmentsBinding.tvSelectedInputDoc.setText(fileName);
         }
         else if (requestCode == 200 && resultCode == RESULT_OK && data != null) {
             selectedUri = data.getData();
-            String fileName = getFileName(selectedUri);
+            String fileName = null; //getFileName(selectedUri);
+            try {
+                fileName = PathUtils.getPath(AddUpdateViewAssignmentsActivity.this,selectedUri);
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"file path: "+ fileName,Toast.LENGTH_SHORT).show();
+            } catch (URISyntaxException e) {
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"error getting image path",Toast.LENGTH_SHORT).show();
+            }
             viewAssignmentsBinding.tvAdvanceSs.setText(fileName);
         }
         else if (requestCode == 300 && resultCode == RESULT_OK && data != null) {
             selectedUri = data.getData();
-            String fileName = getFileName(selectedUri);
+            String fileName = null; //getFileName(selectedUri);
+            try {
+                fileName = PathUtils.getPath(AddUpdateViewAssignmentsActivity.this,selectedUri);
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"file2 path: "+ fileName,Toast.LENGTH_SHORT).show();
+            } catch (URISyntaxException e) {
+                Toast.makeText(AddUpdateViewAssignmentsActivity.this,"error2 getting image path",Toast.LENGTH_SHORT).show();
+            }
             viewAssignmentsBinding.tvFinalPaymentSs.setText(fileName);
         }
 
     }
-
-    private String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    result = cursor.getString(nameIndex);
-                }
-            }
-        } else if (uri.getScheme().equals("file")) {
-            result = new File(uri.getPath()).getAbsolutePath();
-        }
-        return result;
-    }
-
 }

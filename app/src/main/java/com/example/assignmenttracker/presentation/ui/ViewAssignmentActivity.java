@@ -1,13 +1,16 @@
 package com.example.assignmenttracker.presentation.ui;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -16,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,6 +40,7 @@ public class ViewAssignmentActivity extends AppCompatActivity {
     Context context;
     RoomDB database;
     AssignmentModel assignment;
+    final String TAG="VIEWASSIGNMENT";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,35 +50,41 @@ public class ViewAssignmentActivity extends AppCompatActivity {
 
         assignmentId=getIntent().getIntExtra("assignmentId",-1);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    150);
-        }
-        else {
-            init();
-            if (assignment != null)
-                setupAssignmentForView();
-        }
+        init();
+        if (assignment != null)
+            setupAssignmentForView();
+
     }
 
     private void init(){
         context= ViewAssignmentActivity.this;
-        database= RoomDB.getInstance(context);
+        database= RoomDB.getInstance(getApplicationContext(),false);
 
         if(assignmentId!=-1)
             assignment=database.assignmentDAO().getAssignmentById(assignmentId);
     }
 
     private void setupAssignmentForView(){
-        binding.tvProjectNameView.setText(assignment.getProject());
+        binding.tvProjectNameView.setText(assignment.getProject() +" Details");
         binding.tvSemesterView.setText(assignment.getSemester());
         binding.tvSubjectView.setText(assignment.getSubject());
         binding.tvInDateView.setText(assignment.getInDate());
         binding.tvOutDateView.setText(assignment.getOutDate());
         binding.tvInputDocView.setText(assignment.getInputDoc());
 
+        binding.tvInputDocView.setOnClickListener(v->{
+            openPdfFile(assignment.getInputDoc(), true);
+        });
+
+        binding.ivAdvanceSs.setOnClickListener(v->{
+            openPdfFile(assignment.getAdvancePaymentScreenshot(),false);
+        });
+
+        binding.ivFinalPaymentSs.setOnClickListener(v->{
+            openPdfFile(assignment.getFinalPaymentScreenShot(), false);
+        });
+        Log.d(TAG, "setupAssignmentForView: advance ss: "+ assignment.getAdvancePaymentScreenshot());
+        Log.d(TAG, "setupAssignmentForView: final ss: "+assignment.getFinalPaymentScreenShot());
         binding.ivAdvanceSs.setImageBitmap(loadBitmapFromFile(assignment.getAdvancePaymentScreenshot()));
         binding.ivFinalPaymentSs.setImageBitmap(loadBitmapFromFile(assignment.getFinalPaymentScreenShot()));
 
@@ -81,6 +92,8 @@ public class ViewAssignmentActivity extends AppCompatActivity {
     }
 
     public Bitmap loadBitmapFromFile(String filePath) {
+
+        Log.d(TAG, "loadBitmapFromFile: path: " + filePath);
         Bitmap bitmap = null;
         File file = new File(filePath);
 
@@ -105,23 +118,46 @@ public class ViewAssignmentActivity extends AppCompatActivity {
             Toast.makeText(ViewAssignmentActivity.this,"File does not exist.",Toast.LENGTH_SHORT).show();
         }
 
-        return bitmap;
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 200, true);
+
+        return scaledBitmap;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 150) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-                Toast.makeText(this, "permission granted", Toast.LENGTH_SHORT).show();
-                init();
-                if (assignment != null)
-                    setupAssignmentForView();
+    private void openPdfFile(String filePath, boolean isPDF) {
+        File file = new File(filePath);
+
+        // Check if the file exists
+        if (file.exists()) {
+            Uri fileUri;
+
+            // Android 7.0+ requires "content://" URIs instead of "file://"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // Use FileProvider to get a content Uri for the file
+                fileUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", file);
             } else {
-                // Permission denied
-                Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
+                fileUri = Uri.fromFile(file);
             }
+
+            // Create an Intent to view the PDF
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if(isPDF)
+                intent.setDataAndType(fileUri, "application/pdf");
+            else
+                intent.setDataAndType(fileUri, "image/*");
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // Try to open the PDF file
+            try {
+                startActivity(Intent.createChooser(intent, "Open PDF with"));
+            } catch (ActivityNotFoundException e) {
+                // Handle the case where no PDF viewer is installed
+                Toast.makeText(this, "No PDF viewer app installed", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

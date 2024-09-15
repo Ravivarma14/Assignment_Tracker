@@ -29,6 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Name"
+            android:singleLine="true"
             android:id="@+id/et_student_name"/>
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -46,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="University Name"
+            android:singleLine="true"
             android:id="@+id/et_university_name"/>
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -63,6 +65,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Phone Number"
+            android:inputType="number"
+            android:maxLength="10"
             android:id="@+id/et_phone_number"/>
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -79,6 +83,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:singleLine="true"
             android:hint="Refer By"
             android:id="@+id/et_refer_by"/>
 
@@ -91,6 +96,8 @@
         android:text="Add Student"
         android:textSize="24sp"
         app:cornerRadius="25dp"
+        android:backgroundTint="@color/red"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/refer_by"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

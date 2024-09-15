@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignmenttracker.databinding.ItemviewAssignmentBinding;
+import com.example.assignmenttracker.databinding.ItemviewAssignmentNewBinding;
 import com.example.assignmenttracker.models.AssignmentModel;
 import com.example.assignmenttracker.presentation.ui.AddUpdateViewAssignmentsActivity;
 import com.example.assignmenttracker.presentation.ui.DetailedAssignmentsActivity;
@@ -32,7 +33,7 @@ public class AssignmentsRecyclerViewAdapter extends RecyclerView.Adapter<Assignm
     @NonNull
     @Override
     public AssignmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemviewAssignmentBinding binding= ItemviewAssignmentBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ItemviewAssignmentNewBinding binding= ItemviewAssignmentNewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new AssignmentViewHolder(binding);
     }
 
@@ -41,11 +42,13 @@ public class AssignmentsRecyclerViewAdapter extends RecyclerView.Adapter<Assignm
         AssignmentModel assignment= listOfAssignments.get(holder.getAdapterPosition());
 
         holder.binding.tvProjectName.setText(assignment.getProject());
-        holder.binding.tvInDate.setText(assignment.getInDate());
+        //holder.binding.tvInDate.setText(assignment.getInDate());
         holder.binding.tvOutDate.setText(assignment.getOutDate());
-        holder.binding.tvPrice.setText(String.valueOf(assignment.getPrice()));
-        holder.binding.tvAdvance.setText(String.valueOf(assignment.getAdvancePayment()));
-        holder.binding.tvFinalPaymentStatus.setText(assignment.getFinalPayment()==0 ? "Pending": "Completed");
+        //holder.binding.tvPrice.setText(String.valueOf(assignment.getPrice()));
+        //holder.binding.tvAdvance.setText(String.valueOf(assignment.getAdvancePayment()));
+        //holder.binding.tvFinalPaymentStatus.setText(assignment.getFinalPayment()==0 ? "Pending": "Completed");
+        holder.binding.tvStudentName.setText(assignment.getStudentName());
+        holder.binding.tvSemester.setText(assignment.getSemester());
 
         holder.binding.getRoot().setOnClickListener(v->{
             Intent viewAssignment=new Intent(context, ViewAssignmentActivity.class);
@@ -61,8 +64,8 @@ public class AssignmentsRecyclerViewAdapter extends RecyclerView.Adapter<Assignm
 
     public class AssignmentViewHolder extends RecyclerView.ViewHolder{
 
-        ItemviewAssignmentBinding binding;
-        public AssignmentViewHolder(@NonNull ItemviewAssignmentBinding binding) {
+        ItemviewAssignmentNewBinding binding;
+        public AssignmentViewHolder(@NonNull ItemviewAssignmentNewBinding binding) {
             super(binding.getRoot());
             this.binding=binding;
             binding.tvProjectName.post(()-> binding.tvProjectName.requestFocus());
